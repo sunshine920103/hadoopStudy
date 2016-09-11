@@ -1,5 +1,5 @@
 /**
- *  π”√µƒ“ª–©≥£¡ø
+ * Â∏∏ÈáèË°®
  *
  * Created by cc on 2016/9/7.
  */
@@ -10,6 +10,7 @@ public class Constants {
 
     public static class TableName{
         public static final  String TEST=NAMESPACE + "test";
+        public static final  String RECEIVE=NAMESPACE + "receive";
     }
 
 

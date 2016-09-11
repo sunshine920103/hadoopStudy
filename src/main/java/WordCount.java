@@ -1,5 +1,7 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -21,7 +23,7 @@ public class WordCount {
 
     private static final Logger LOGGER= LoggerFactory.getLogger(WordCount.class);
 
-    static class HbaseMapper extends TableMapper<Text,Text>{
+    static class HbaseMapper extends TableMapper<ImmutableBytesWritable,Put>{
 
         @Override
         protected void map(ImmutableBytesWritable row, Result result, Context context) throws IOException, InterruptedException {
@@ -33,8 +35,20 @@ public class WordCount {
             LOGGER.info("------keys---::::"+keys);
             LOGGER.info("------values---::::"+Bytes.toString(value));
 
+            context.write(row, resultToPut(row,result));
+
+        }
+
+        private static Put resultToPut(ImmutableBytesWritable key, Result result) throws IOException {
+            Put put = new Put(key.get());
+            for (KeyValue kv : result.raw()) {
+                put.add(kv);
+            }
+            return put;
         }
     }
+
+
 
 
 
@@ -46,7 +60,7 @@ public class WordCount {
 
         Scan scan = new Scan();
 
-        //每次rpc的恳求记录数
+        //rpc璇锋眰鐨勮褰曟暟
         scan.setCaching(500);        // 1 is the default in Scan, which will be bad for MapReduce jobs
         scan.setCacheBlocks(false);  // don't set to true for MR jobs
 
@@ -57,8 +71,12 @@ public class WordCount {
                 null,             // mapper output key
                 null,             // mapper output value
                 job);
-        job.setOutputFormatClass(NullOutputFormat.class);   // because we aren't emitting anything from mapper
 
+        TableMapReduceUtil.initTableReducerJob(
+                Constants.TableName.RECEIVE,      // output table
+                null,             // reducer class
+                job);
+        job.setNumReduceTasks(0);
 
 
         System.exit(job.waitForCompletion(true) ? 0 : 1);

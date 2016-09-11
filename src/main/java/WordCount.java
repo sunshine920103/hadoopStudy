@@ -46,7 +46,7 @@ public class WordCount {
 
         Scan scan = new Scan();
 
-        //每次rpc的恳求记录数
+        //姣忔rpc鐨勬伋姹傝褰曟暟
         scan.setCaching(500);        // 1 is the default in Scan, which will be bad for MapReduce jobs
         scan.setCacheBlocks(false);  // don't set to true for MR jobs
 
